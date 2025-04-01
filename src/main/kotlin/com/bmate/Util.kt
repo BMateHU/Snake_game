@@ -20,7 +20,7 @@ fun saveScore(score: Int) {
     File("bestScore.txt").writeText("$score")
 }
 
-fun ArrayList<Vec2<Int>>.containsValue(x: Int = -1, y: Int = -1) : Boolean {
+fun ArrayList<Vec2>.containsValue(x: Int = -1, y: Int = -1) : Boolean {
     this.forEach {
         if(it.x == x || it.y == y) {
             return true

@@ -4,18 +4,32 @@ import com.bmate.Game.Direction
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.paint.Color
 
-class Snake(vec: Vec2<Int>) : Object(vec) {
+class Snake(vec: Vec2) : Object(vec) {
     constructor(x: Int = 0, y: Int = 0) : this(Vec2(x, y))
 
+    /**
+     * Last position of the snake's part
+     */
     private var last = Vec2(0, 0)
+
+    /**
+     * Linked list -> head first, after that the body
+     */
     private var before: Snake? = null
     var score: Int = 0
 
+    /**
+     * Draw the object
+     * @param box a square, changes drawing's size and placement (grid-like)
+     */
     override fun draw(box: Double, graphicsContext: GraphicsContext, color: Color) {
         super.draw(box, graphicsContext, color)
         before?.draw(box, graphicsContext, color)
     }
 
+    /**
+     * Updates position for not-head snakes
+     */
     private fun updatePosition(snake: Snake) {
         last.x = vec.x
         last.y = vec.y
@@ -24,9 +38,12 @@ class Snake(vec: Vec2<Int>) : Object(vec) {
         before?.updatePosition(this)
     }
 
-    fun getSnakeVector(): ArrayList<Vec2<Int>> {
+    /**
+     * @return all the snake pos vectors
+     */
+    fun getSnakeVector(): ArrayList<Vec2> {
         var temp: Snake? = this
-        val snakes: ArrayList<Vec2<Int>> = arrayListOf(temp!!.vec)
+        val snakes: ArrayList<Vec2> = arrayListOf(temp!!.vec)
         while(temp?.before != null) {
             temp = temp.before
             if(temp != null) {
@@ -36,6 +53,10 @@ class Snake(vec: Vec2<Int>) : Object(vec) {
         return snakes
     }
 
+    /**
+     * Checks collision with apple
+     * @return true if collided
+     */
     fun checkCollision(apple: Apple) : Boolean {
         if(apple.checkCollision(this)) {
             score+=10
@@ -44,6 +65,10 @@ class Snake(vec: Vec2<Int>) : Object(vec) {
         return false
     }
 
+    /**
+     * Checks collision with itself
+     * @return true if collided
+     */
     fun checkCollision(): Boolean {
         var temp = getSnakeVector()
         temp.remove(this.vec)
@@ -54,6 +79,9 @@ class Snake(vec: Vec2<Int>) : Object(vec) {
         return false
     }
 
+    /**
+     * Adds new snake to the end
+     */
     fun addSnake(snake: Snake) {
         var temp: Snake? = this
         while(temp?.before != null) {
@@ -62,26 +90,29 @@ class Snake(vec: Vec2<Int>) : Object(vec) {
         temp?.before = snake
     }
 
+    /**
+     * Updates snake head's position based on the direction, then updates the body's position
+     */
     fun updatePosition(direction: Direction = Direction.DOWN) {
         last.x = vec.x
         last.y = vec.y
         if (direction == Direction.LEFT) {
-            vec.x--
+            vec -= Vec2(1, 0)
             if(vec.x < 0)
                 vec.x = 19
         }
         if (direction == Direction.RIGHT) {
-            vec.x++
+            vec += Vec2(1, 0)
             if(vec.x > 19)
                 vec.x = 0
         }
         if (direction == Direction.UP) {
-            vec.y--
+            vec -= Vec2(0, 1)
             if(vec.y < 0)
                 vec.y = 19
         }
         if (direction == Direction.DOWN) {
-            vec.y++
+            vec += Vec2(0, 1)
             if(vec.y > 19)
                 vec.y = 0
         }

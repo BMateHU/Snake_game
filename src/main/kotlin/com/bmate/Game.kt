@@ -31,13 +31,17 @@ class Game : Application() {
     private lateinit var snake: Snake
     private lateinit var apple : Apple
 
-    private var box = (HEIGHT /20).toDouble()
+    //map contains 20x20 squares
+    private var box = (HEIGHT / 20).toDouble()
 
     private var time: Long = 0
     private var paused: Boolean = false
     private var moved: Boolean = false
     private var bestScore : Int = 0
 
+    /**
+     * Direction where the snake goes
+     */
     private var currentDirection: Direction = Direction.DOWN
 
     private var lastFrameTime: Long = System.nanoTime()
@@ -56,22 +60,16 @@ class Game : Application() {
         root.children.add(canvas)
 
         continueText = Text()
-        continueText.x = (WIDTH/2).toDouble()
-        continueText.y = (HEIGHT/2).toDouble()
         continueText.font = Font(30.0)
         root.children.add(continueText)
 
         bestScore = loadScore()
 
         bestScoreText = Text()
-        bestScoreText.x = (WIDTH/2).toDouble()
-        bestScoreText.y = (HEIGHT/2).toDouble()
         bestScoreText.font = Font(30.0)
         root.children.add(bestScoreText)
 
         scoreText = Text()
-        scoreText.x = (WIDTH/2).toDouble()
-        scoreText.y = (HEIGHT/2).toDouble()
         scoreText.font = Font(20.0)
         root.children.add(scoreText)
 
@@ -92,6 +90,20 @@ class Game : Application() {
         mainStage.show()
     }
 
+    /**
+     * Changes menu text to the desired (best score cant be changed)
+     * @param text Upper text field's text
+     */
+    private fun changeText(text: String) {
+        continueText.text = text
+        continueText.x = WIDTH/2 - continueText.boundsInLocal.width/2
+        continueText.y = HEIGHT/2 - continueText.boundsInLocal.height/2
+
+        bestScoreText.text = "Best score: $bestScore"
+        bestScoreText.x = WIDTH/2 - bestScoreText.boundsInLocal.width/2
+        bestScoreText.y = HEIGHT/2 - bestScoreText.boundsInLocal.height/2 + continueText.boundsInLocal.height + 20
+    }
+
     private fun prepareActionHandlers() {
         mainScene.onKeyPressed = EventHandler { event ->
             currentlyActiveKeys = event.code
@@ -107,13 +119,7 @@ class Game : Application() {
             paused = !paused
 
         if(paused && continueText.text != "Press R to restart!") {
-            continueText.text = "Press Esc to continue!\nPress R to restart!"
-            continueText.x = WIDTH/2 - continueText.boundsInLocal.width/2
-            continueText.y = HEIGHT/2 - continueText.boundsInLocal.height/2
-
-            bestScoreText.text = "Best score: $bestScore"
-            bestScoreText.x = WIDTH/2 - bestScoreText.boundsInLocal.width/2
-            bestScoreText.y = HEIGHT/2 - bestScoreText.boundsInLocal.height/2 + continueText.boundsInLocal.height + 20
+            changeText("Press Esc to continue!\nPress R to restart!")
         }
         else if(!paused && continueText.text != "Press R to restart!") {
             continueText.text = ""
@@ -131,16 +137,11 @@ class Game : Application() {
         //snake moves every 0.1 sec
         if(time / 100_000_000 >= 1 && !paused) {
             snake.updatePosition(currentDirection)
+            //if moved, you can change direction
             moved = true
             //collision -> end of game
             if(snake.checkCollision()) {
-                continueText.text = "Press R to restart!"
-                continueText.x = WIDTH/2 - continueText.boundsInLocal.width/2
-                continueText.y = HEIGHT/2 - continueText.boundsInLocal.height/2
-
-                bestScoreText.text = "Best score: $bestScore"
-                bestScoreText.x = WIDTH/2 - bestScoreText.boundsInLocal.width/2
-                bestScoreText.y = HEIGHT/2 - bestScoreText.boundsInLocal.height/2 + continueText.boundsInLocal.height + 20
+                changeText("Press R to restart!")
 
                 paused = true
                 if(bestScore < snake.score)
@@ -156,13 +157,7 @@ class Game : Application() {
 
         //Snake eats apple -> create new apple with random coords, if snake is on that generate new random
         if(snake.checkCollision(apple)) {
-            var x = Random.nextInt(from = 0, until = 20)
-            var y = Random.nextInt(from = 0, until = 20)
-            while(snake.getSnakeVector().containsValue(x = x))
-                x = Random.nextInt(from = 0, until = 20)
-            while(snake.getSnakeVector().containsValue(y = y))
-                y = Random.nextInt(from = 0, until = 20)
-            apple = Apple(x, y)
+            apple = Apple.generateApple(snake)
             snake.addSnake(Snake(-1, -1))
         }
 
@@ -175,6 +170,7 @@ class Game : Application() {
         graphicsContext.fill = Color.GRAY
         graphicsContext.fillRect(0.0, 0.0, WIDTH.toDouble(), HEIGHT.toDouble())
 
+        //draw objects
         snake.draw(box, graphicsContext, Color.GREEN)
         apple.draw(box, graphicsContext, Color.RED)
 
@@ -185,6 +181,7 @@ class Game : Application() {
             graphicsContext.fillText("${1000 / elapsedMs} fps", 10.0, 10.0)
         }
 
+        //game can be paused, with R reset
         if(paused) {
             if(currentlyActiveKeys?.equals(KeyCode.R) == true) {
                 snake = Snake()
