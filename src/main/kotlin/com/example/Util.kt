@@ -2,9 +2,9 @@ package com.example
 
 import java.io.File
 
-fun getResource(filename: String): String {
+/*fun getResource(filename: String): String {
     return Game::class.java.getResource(filename).toString()
-}
+}*/
 
 fun loadScore(): Int {
     if(!File("bestScore.txt").exists()) {

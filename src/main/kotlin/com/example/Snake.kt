@@ -7,8 +7,8 @@ import javafx.scene.paint.Color
 class Snake {
     private var x = 0
     private var y = 0
-    private var lastX = 0;
-    private var lastY = 0;
+    private var lastX = 0
+    private var lastY = 0
     var before: Snake? = null
     var score: Int = 0
 
