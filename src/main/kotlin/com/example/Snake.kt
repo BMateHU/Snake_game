@@ -5,24 +5,49 @@ import javafx.scene.canvas.GraphicsContext
 import javafx.scene.paint.Color
 
 class Snake {
-    private var snakeX = 0
-    private var snakeY = 0
+    private var x = 0
+    private var y = 0
     private var lastX = 0;
     private var lastY = 0;
     var before: Snake? = null
+    var score: Int = 0
 
     fun draw(box: Double, graphicsContext: GraphicsContext) {
         graphicsContext.fill = Color.BLUE
-        graphicsContext.fillRect(box * snakeX, box * snakeY, box, box)
+        graphicsContext.fillRect(box * x, box * y, box, box)
         before?.draw(box, graphicsContext)
     }
 
     private fun updatePosition(snake: Snake) {
-        lastX = snakeX
-        lastY = snakeY
-        this.snakeX = snake.lastX
-        this.snakeY = snake.lastY
+        lastX = x
+        lastY = y
+        this.x = snake.lastX
+        this.y = snake.lastY
         before?.updatePosition(this)
+    }
+
+    fun getSnakeX(): ArrayList<Int> {
+        var temp: Snake? = this
+        val snakes: ArrayList<Int> = arrayListOf(temp!!.x)
+        while(temp?.before != null) {
+            temp = temp.before
+            if(temp != null) {
+                snakes.add(temp.x)
+            }
+        }
+        return snakes
+    }
+
+    fun getSnakeY(): ArrayList<Int> {
+        var temp: Snake? = this
+        val snakes: ArrayList<Int> = arrayListOf(temp!!.y)
+        while(temp?.before != null) {
+            temp = temp.before
+            if(temp != null) {
+                snakes.add(temp.y)
+            }
+        }
+        return snakes
     }
 
     fun checkCollision() : Boolean {
@@ -35,9 +60,17 @@ class Snake {
             }
         }
         for(snake in snakes) {
-            if(snakeX == snake.lastX && snakeY == snake.lastY) {
+            if(x == snake.lastX && y == snake.lastY) {
                 return true
             }
+        }
+        return false
+    }
+
+    fun checkCollision(apple: Apple) : Boolean {
+        if(apple.x == x && apple.y == y) {
+            score += 10
+            return true
         }
         return false
     }
@@ -51,27 +84,27 @@ class Snake {
     }
 
     fun updatePosition(direction: Direction = Direction.DOWN) {
-        lastX = snakeX
-        lastY = snakeY
+        lastX = x
+        lastY = y
         if (direction == Direction.LEFT) {
-            snakeX--
-            if(snakeX < 0)
-                snakeX = 19
+            x--
+            if(x < 0)
+                x = 19
         }
         if (direction == Direction.RIGHT) {
-            snakeX++
-            if(snakeX > 19)
-                snakeX = 0
+            x++
+            if(x > 19)
+                x = 0
         }
         if (direction == Direction.UP) {
-            snakeY--
-            if(snakeY < 0)
-                snakeY = 19
+            y--
+            if(y < 0)
+                y = 19
         }
         if (direction == Direction.DOWN) {
-            snakeY++
-            if(snakeY > 19)
-                snakeY = 0
+            y++
+            if(y > 19)
+                y = 0
         }
         before?.updatePosition(this)
     }

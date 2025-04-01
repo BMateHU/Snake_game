@@ -13,7 +13,7 @@ import javafx.scene.paint.Color
 import javafx.scene.text.Font
 import javafx.scene.text.Text
 import javafx.stage.Stage
-import kotlin.system.exitProcess
+import kotlin.random.Random
 
 class Game : Application() {
 
@@ -24,15 +24,19 @@ class Game : Application() {
 
     private lateinit var mainScene: Scene
     private lateinit var graphicsContext: GraphicsContext
-    private lateinit var textField : Text
-    private lateinit var textField2 : Text
+    private lateinit var continueText : Text
+    private lateinit var bestScoreText : Text
+    private lateinit var scoreText : Text
 
     private lateinit var snake: Snake
+    private lateinit var apple : Apple
 
     private var box = (HEIGHT /20).toDouble()
 
     private var time: Long = 0
     private var paused: Boolean = false
+    private var moved: Boolean = false
+    private var bestScore : Int = 0
 
     private var currentDirection: Direction = Direction.DOWN
 
@@ -51,25 +55,32 @@ class Game : Application() {
         val canvas = Canvas(WIDTH.toDouble(), HEIGHT.toDouble())
         root.children.add(canvas)
 
-        textField = Text()
-        textField.x = (WIDTH/2).toDouble()
-        textField.y = (HEIGHT/2).toDouble()
-        textField.font = Font(30.0)
-        root.children.add(textField)
+        continueText = Text()
+        continueText.x = (WIDTH/2).toDouble()
+        continueText.y = (HEIGHT/2).toDouble()
+        continueText.font = Font(30.0)
+        root.children.add(continueText)
 
-        textField2 = Text()
-        textField2.x = (WIDTH/2).toDouble()
-        textField2.y = (HEIGHT/2).toDouble()
-        textField2.font = Font(30.0)
-        root.children.add(textField2)
+        bestScore = loadScore()
+
+        bestScoreText = Text()
+        bestScoreText.x = (WIDTH/2).toDouble()
+        bestScoreText.y = (HEIGHT/2).toDouble()
+        bestScoreText.font = Font(30.0)
+        root.children.add(bestScoreText)
+
+        scoreText = Text()
+        scoreText.x = (WIDTH/2).toDouble()
+        scoreText.y = (HEIGHT/2).toDouble()
+        scoreText.font = Font(20.0)
+        root.children.add(scoreText)
 
         prepareActionHandlers()
 
         graphicsContext = canvas.graphicsContext2D
 
         snake = Snake()
-        snake.addSnake(Snake())
-        snake.addSnake(Snake())
+        apple = Apple(Random.nextInt(from = 0, until = 20), Random.nextInt(from = 0, until = 20))
 
         // Main loop
         object : AnimationTimer() {
@@ -92,21 +103,21 @@ class Game : Application() {
 
     private fun onKeyReleased(event: KeyEvent) {
         currentlyActiveKeys = null
-        if(event.code == KeyCode.ESCAPE)
+        if(event.code == KeyCode.ESCAPE && continueText.text != "Press R to restart!")
             paused = !paused
 
-        if(paused) {
-            textField.text = "Press Esc to continue!"
-            textField.x = WIDTH/2 - textField.boundsInLocal.width/2
-            textField.y = HEIGHT/2 - textField.boundsInLocal.height/2
+        if(paused && continueText.text != "Press R to restart!") {
+            continueText.text = "Press Esc to continue!\nPress R to restart!"
+            continueText.x = WIDTH/2 - continueText.boundsInLocal.width/2
+            continueText.y = HEIGHT/2 - continueText.boundsInLocal.height/2
 
-            textField2.text = "Press R to restart!"
-            textField2.x = WIDTH/2 - textField2.boundsInLocal.width/2
-            textField2.y = HEIGHT/2 - textField2.boundsInLocal.height/2 + textField.boundsInLocal.height + 20
+            bestScoreText.text = "Best score: $bestScore"
+            bestScoreText.x = WIDTH/2 - bestScoreText.boundsInLocal.width/2
+            bestScoreText.y = HEIGHT/2 - bestScoreText.boundsInLocal.height/2 + continueText.boundsInLocal.height + 20
         }
         else {
-            textField.text = ""
-            textField2.text = ""
+            continueText.text = ""
+            bestScoreText.text = ""
         }
     }
 
@@ -116,12 +127,38 @@ class Game : Application() {
         val elapsedNanos = currentNanoTime - lastFrameTime
         lastFrameTime = currentNanoTime
         time += elapsedNanos
-        if(time / 300_000_000 >= 1 && !paused) {
+        if(time / 100_000_000 >= 1 && !paused) {
             snake.updatePosition(currentDirection)
+            moved = true
             if(snake.checkCollision()) {
-                exitProcess(1)
+                continueText.text = "Press R to restart!"
+                continueText.x = WIDTH/2 - continueText.boundsInLocal.width/2
+                continueText.y = HEIGHT/2 - continueText.boundsInLocal.height/2
+
+                bestScoreText.text = "Best score: $bestScore"
+                bestScoreText.x = WIDTH/2 - bestScoreText.boundsInLocal.width/2
+                bestScoreText.y = HEIGHT/2 - bestScoreText.boundsInLocal.height/2 + continueText.boundsInLocal.height + 20
+
+                paused = true
+                if(bestScore < snake.score)
+                    saveScore(snake.score)
             }
             time = 0
+        }
+
+        scoreText.text = "Score: ${snake.score}"
+        scoreText.x = WIDTH - scoreText.boundsInLocal.width - 10
+        scoreText.y = scoreText.boundsInLocal.height
+
+        if(snake.checkCollision(apple)) {
+            var x = Random.nextInt(from = 0, until = 20)
+            var y = Random.nextInt(from = 0, until = 20)
+            while(snake.getSnakeX().contains(x))
+                x = Random.nextInt(from = 0, until = 20)
+            while(snake.getSnakeY().contains(y))
+                y = Random.nextInt(from = 0, until = 20)
+            apple = Apple(x, y)
+            snake.addSnake(Snake())
         }
 
         // clear canvas
@@ -134,6 +171,7 @@ class Game : Application() {
         graphicsContext.fillRect(0.0, 0.0, WIDTH.toDouble(), HEIGHT.toDouble())
 
         snake.draw(box, graphicsContext)
+        apple.draw(box, graphicsContext)
 
         // display crude fps counter
         val elapsedMs = elapsedNanos / 1_000_000
@@ -147,8 +185,9 @@ class Game : Application() {
                 snake = Snake()
                 currentDirection = Direction.DOWN
                 paused = false
-                textField.text = ""
-                textField2.text = ""
+                continueText.text = ""
+                bestScoreText.text = ""
+                bestScore = loadScore()
             }
         }
     }
@@ -158,17 +197,20 @@ class Game : Application() {
     }
 
     private fun changeDirection() : Direction {
-        if ((currentlyActiveKeys?.equals(KeyCode.W) == true || currentlyActiveKeys?.equals(KeyCode.UP) == true) && currentDirection != Direction.DOWN) {
-            return Direction.UP
-        }
-        else if((currentlyActiveKeys?.equals(KeyCode.DOWN) == true || currentlyActiveKeys?.equals(KeyCode.S) == true) && currentDirection != Direction.UP) {
-            return Direction.DOWN
-        }
-        else if((currentlyActiveKeys?.equals(KeyCode.LEFT) == true || currentlyActiveKeys?.equals(KeyCode.A) == true) && currentDirection != Direction.RIGHT) {
-            return Direction.LEFT
-        }
-        else if((currentlyActiveKeys?.equals(KeyCode.RIGHT) == true || currentlyActiveKeys?.equals(KeyCode.D) == true) && currentDirection != Direction.LEFT) {
-            return Direction.RIGHT
+        if(moved) {
+            if ((currentlyActiveKeys?.equals(KeyCode.W) == true || currentlyActiveKeys?.equals(KeyCode.UP) == true) && currentDirection != Direction.DOWN) {
+                moved = false
+                return Direction.UP
+            } else if ((currentlyActiveKeys?.equals(KeyCode.DOWN) == true || currentlyActiveKeys?.equals(KeyCode.S) == true) && currentDirection != Direction.UP) {
+                moved = false
+                return Direction.DOWN
+            } else if ((currentlyActiveKeys?.equals(KeyCode.LEFT) == true || currentlyActiveKeys?.equals(KeyCode.A) == true) && currentDirection != Direction.RIGHT) {
+                moved = false
+                return Direction.LEFT
+            } else if ((currentlyActiveKeys?.equals(KeyCode.RIGHT) == true || currentlyActiveKeys?.equals(KeyCode.D) == true) && currentDirection != Direction.LEFT) {
+                moved = false
+                return Direction.RIGHT
+            }
         }
         return currentDirection
     }
