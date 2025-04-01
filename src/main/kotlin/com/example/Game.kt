@@ -7,7 +7,6 @@ import javafx.scene.Group
 import javafx.scene.Scene
 import javafx.scene.canvas.Canvas
 import javafx.scene.canvas.GraphicsContext
-import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.paint.Color
 import javafx.stage.Stage
@@ -15,23 +14,24 @@ import javafx.stage.Stage
 class Game : Application() {
 
     companion object {
-        private const val WIDTH = 512
-        private const val HEIGHT = 512
+        private const val WIDTH = 520
+        private const val HEIGHT = 520
     }
 
     private lateinit var mainScene: Scene
     private lateinit var graphicsContext: GraphicsContext
 
-    private lateinit var space: Image
-    private lateinit var sun: Image
+    private lateinit var snake: Snake
 
-    private var sunX = WIDTH / 2
-    private var sunY = HEIGHT / 2
+    private var box = (HEIGHT /20).toDouble()
+
+    private var time: Long = 0
+    private var currentDirection: Direction = Direction.DOWN
 
     private var lastFrameTime: Long = System.nanoTime()
 
     // use a set so duplicates are not possible
-    private val currentlyActiveKeys = mutableSetOf<KeyCode>()
+    private var currentlyActiveKeys : KeyCode? = null
 
     override fun start(mainStage: Stage) {
         mainStage.title = "Event Handling"
@@ -47,7 +47,9 @@ class Game : Application() {
 
         graphicsContext = canvas.graphicsContext2D
 
-        loadGraphics()
+        snake = Snake()
+        snake.addSnake(Snake())
+        snake.addSnake(Snake())
 
         // Main loop
         object : AnimationTimer() {
@@ -61,18 +63,11 @@ class Game : Application() {
 
     private fun prepareActionHandlers() {
         mainScene.onKeyPressed = EventHandler { event ->
-            currentlyActiveKeys.add(event.code)
+            currentlyActiveKeys = event.code
         }
         mainScene.onKeyReleased = EventHandler { event ->
-            currentlyActiveKeys.remove(event.code)
+            currentlyActiveKeys = null
         }
-    }
-
-    private fun loadGraphics() {
-        // prefixed with / to indicate that the files are
-        // in the root of the "resources" folder
-        space = Image(getResource("/space.png"))
-        sun = Image(getResource("/sun.png"))
     }
 
     private fun tickAndRender(currentNanoTime: Long) {
@@ -80,18 +75,22 @@ class Game : Application() {
         // can be used for physics calculation, etc
         val elapsedNanos = currentNanoTime - lastFrameTime
         lastFrameTime = currentNanoTime
+        time += elapsedNanos
+        if(time / 300_000_000 >= 1) {
+            snake.updatePosition(currentDirection)
+            time = 0
+        }
 
         // clear canvas
         graphicsContext.clearRect(0.0, 0.0, WIDTH.toDouble(), HEIGHT.toDouble())
 
+        currentDirection = changeDirection()
+
         // draw background
-        graphicsContext.drawImage(space, 0.0, 0.0)
+        graphicsContext.fill = Color.GRAY
+        graphicsContext.fillRect(0.0, 0.0, WIDTH.toDouble(), HEIGHT.toDouble())
 
-        // perform world updates
-        updateSunPosition()
-
-        // draw sun
-        graphicsContext.drawImage(sun, sunX.toDouble(), sunY.toDouble())
+        snake.draw(box, graphicsContext)
 
         // display crude fps counter
         val elapsedMs = elapsedNanos / 1_000_000
@@ -101,19 +100,24 @@ class Game : Application() {
         }
     }
 
-    private fun updateSunPosition() {
-        if (currentlyActiveKeys.contains(KeyCode.LEFT)) {
-            sunX--
+    enum class Direction {
+        UP, DOWN, LEFT, RIGHT
+    }
+
+    private fun changeDirection() : Direction {
+        if ((currentlyActiveKeys?.equals(KeyCode.W) == true || currentlyActiveKeys?.equals(KeyCode.UP) == true) && currentDirection != Direction.DOWN) {
+            return Direction.UP
         }
-        if (currentlyActiveKeys.contains(KeyCode.RIGHT)) {
-            sunX++
+        else if((currentlyActiveKeys?.equals(KeyCode.DOWN) == true || currentlyActiveKeys?.equals(KeyCode.S) == true) && currentDirection != Direction.UP) {
+            return Direction.DOWN
         }
-        if (currentlyActiveKeys.contains(KeyCode.UP)) {
-            sunY--
+        else if((currentlyActiveKeys?.equals(KeyCode.LEFT) == true || currentlyActiveKeys?.equals(KeyCode.A) == true) && currentDirection != Direction.RIGHT) {
+            return Direction.LEFT
         }
-        if (currentlyActiveKeys.contains(KeyCode.DOWN)) {
-            sunY++
+        else if((currentlyActiveKeys?.equals(KeyCode.RIGHT) == true || currentlyActiveKeys?.equals(KeyCode.D) == true) && currentDirection != Direction.LEFT) {
+            return Direction.RIGHT
         }
+        return currentDirection
     }
 
 }
