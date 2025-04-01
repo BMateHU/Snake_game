@@ -8,8 +8,12 @@ import javafx.scene.Scene
 import javafx.scene.canvas.Canvas
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
 import javafx.scene.paint.Color
+import javafx.scene.text.Font
+import javafx.scene.text.Text
 import javafx.stage.Stage
+import kotlin.system.exitProcess
 
 class Game : Application() {
 
@@ -20,12 +24,16 @@ class Game : Application() {
 
     private lateinit var mainScene: Scene
     private lateinit var graphicsContext: GraphicsContext
+    private lateinit var textField : Text
+    private lateinit var textField2 : Text
 
     private lateinit var snake: Snake
 
     private var box = (HEIGHT /20).toDouble()
 
     private var time: Long = 0
+    private var paused: Boolean = false
+
     private var currentDirection: Direction = Direction.DOWN
 
     private var lastFrameTime: Long = System.nanoTime()
@@ -42,6 +50,18 @@ class Game : Application() {
 
         val canvas = Canvas(WIDTH.toDouble(), HEIGHT.toDouble())
         root.children.add(canvas)
+
+        textField = Text()
+        textField.x = (WIDTH/2).toDouble()
+        textField.y = (HEIGHT/2).toDouble()
+        textField.font = Font(30.0)
+        root.children.add(textField)
+
+        textField2 = Text()
+        textField2.x = (WIDTH/2).toDouble()
+        textField2.y = (HEIGHT/2).toDouble()
+        textField2.font = Font(30.0)
+        root.children.add(textField2)
 
         prepareActionHandlers()
 
@@ -66,7 +86,27 @@ class Game : Application() {
             currentlyActiveKeys = event.code
         }
         mainScene.onKeyReleased = EventHandler { event ->
-            currentlyActiveKeys = null
+            onKeyReleased(event)
+        }
+    }
+
+    private fun onKeyReleased(event: KeyEvent) {
+        currentlyActiveKeys = null
+        if(event.code == KeyCode.ESCAPE)
+            paused = !paused
+
+        if(paused) {
+            textField.text = "Press Esc to continue!"
+            textField.x = WIDTH/2 - textField.boundsInLocal.width/2
+            textField.y = HEIGHT/2 - textField.boundsInLocal.height/2
+
+            textField2.text = "Press R to restart!"
+            textField2.x = WIDTH/2 - textField2.boundsInLocal.width/2
+            textField2.y = HEIGHT/2 - textField2.boundsInLocal.height/2 + textField.boundsInLocal.height + 20
+        }
+        else {
+            textField.text = ""
+            textField2.text = ""
         }
     }
 
@@ -76,8 +116,11 @@ class Game : Application() {
         val elapsedNanos = currentNanoTime - lastFrameTime
         lastFrameTime = currentNanoTime
         time += elapsedNanos
-        if(time / 300_000_000 >= 1) {
+        if(time / 300_000_000 >= 1 && !paused) {
             snake.updatePosition(currentDirection)
+            if(snake.checkCollision()) {
+                exitProcess(1)
+            }
             time = 0
         }
 
@@ -97,6 +140,16 @@ class Game : Application() {
         if (elapsedMs != 0L) {
             graphicsContext.fill = Color.WHITE
             graphicsContext.fillText("${1000 / elapsedMs} fps", 10.0, 10.0)
+        }
+
+        if(paused) {
+            if(currentlyActiveKeys?.equals(KeyCode.R) == true) {
+                snake = Snake()
+                currentDirection = Direction.DOWN
+                paused = false
+                textField.text = ""
+                textField2.text = ""
+            }
         }
     }
 

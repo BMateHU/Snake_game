@@ -25,6 +25,23 @@ class Snake {
         before?.updatePosition(this)
     }
 
+    fun checkCollision() : Boolean {
+        var temp: Snake? = this
+        val snakes: ArrayList<Snake> = arrayListOf(temp!!)
+        while(temp?.before != null) {
+            temp = temp.before
+            if(temp != null) {
+                snakes.add(temp)
+            }
+        }
+        for(snake in snakes) {
+            if(snakeX == snake.lastX && snakeY == snake.lastY) {
+                return true
+            }
+        }
+        return false
+    }
+
     fun addSnake(snake: Snake) {
         var temp: Snake? = this
         while(temp?.before != null) {
