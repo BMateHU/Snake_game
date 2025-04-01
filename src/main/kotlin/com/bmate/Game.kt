@@ -1,4 +1,4 @@
-package com.example
+package com.bmate
 
 import javafx.animation.AnimationTimer
 import javafx.application.Application
@@ -115,7 +115,7 @@ class Game : Application() {
             bestScoreText.x = WIDTH/2 - bestScoreText.boundsInLocal.width/2
             bestScoreText.y = HEIGHT/2 - bestScoreText.boundsInLocal.height/2 + continueText.boundsInLocal.height + 20
         }
-        else {
+        else if(!paused && continueText.text != "Press R to restart!") {
             continueText.text = ""
             bestScoreText.text = ""
         }
@@ -127,9 +127,12 @@ class Game : Application() {
         val elapsedNanos = currentNanoTime - lastFrameTime
         lastFrameTime = currentNanoTime
         time += elapsedNanos
+
+        //snake moves every 0.1 sec
         if(time / 100_000_000 >= 1 && !paused) {
             snake.updatePosition(currentDirection)
             moved = true
+            //collision -> end of game
             if(snake.checkCollision()) {
                 continueText.text = "Press R to restart!"
                 continueText.x = WIDTH/2 - continueText.boundsInLocal.width/2
@@ -146,19 +149,21 @@ class Game : Application() {
             time = 0
         }
 
+        //shows score real-time
         scoreText.text = "Score: ${snake.score}"
         scoreText.x = WIDTH - scoreText.boundsInLocal.width - 10
         scoreText.y = scoreText.boundsInLocal.height
 
+        //Snake eats apple -> create new apple with random coords, if snake is on that generate new random
         if(snake.checkCollision(apple)) {
             var x = Random.nextInt(from = 0, until = 20)
             var y = Random.nextInt(from = 0, until = 20)
-            while(snake.getSnakeX().contains(x))
+            while(snake.getSnakeVector().containsValue(x = x))
                 x = Random.nextInt(from = 0, until = 20)
-            while(snake.getSnakeY().contains(y))
+            while(snake.getSnakeVector().containsValue(y = y))
                 y = Random.nextInt(from = 0, until = 20)
             apple = Apple(x, y)
-            snake.addSnake(Snake())
+            snake.addSnake(Snake(-1, -1))
         }
 
         // clear canvas
@@ -170,8 +175,8 @@ class Game : Application() {
         graphicsContext.fill = Color.GRAY
         graphicsContext.fillRect(0.0, 0.0, WIDTH.toDouble(), HEIGHT.toDouble())
 
-        snake.draw(box, graphicsContext)
-        apple.draw(box, graphicsContext)
+        snake.draw(box, graphicsContext, Color.GREEN)
+        apple.draw(box, graphicsContext, Color.RED)
 
         // display crude fps counter
         val elapsedMs = elapsedNanos / 1_000_000

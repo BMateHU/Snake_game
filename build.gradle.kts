@@ -25,4 +25,4 @@ javafx {
     modules = listOf("javafx.controls", "javafx.fxml")
 }
 
-application.mainClass = "com.example.MainKt"
+application.mainClass = "com.bmate.MainKt"
