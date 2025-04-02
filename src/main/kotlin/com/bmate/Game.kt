@@ -160,7 +160,7 @@ class Game : Application() {
         time += elapsedNanos
 
         //snake moves every 0.1 sec
-        if(time / 200_000_000 >= 1 && !paused) {
+        if(time / 1_000_000_000 >= 1 && !paused) {
             snake.updatePosition(currentDirection)
             //if moved, you can change direction
             moved = true
@@ -176,16 +176,18 @@ class Game : Application() {
             time = 0
         }
 
+        //Snake eats apple -> create new apple with random coords, if snake is on that generate new random
+        if(!paused && snake.getSnakeVector().size != squareCount * squareCount) {
+            if(snake.checkCollision(apple)) {
+                apple = Apple.generateApple(snake)
+                snake.addSnakeBody(SnakeBody(-1, -1))
+            }
+        }
+
         //shows score real-time
         scoreText.text = "Score: ${snake.score}"
         scoreText.x = WIDTH - scoreText.boundsInLocal.width - 10
         scoreText.y = scoreText.boundsInLocal.height
-
-        //Snake eats apple -> create new apple with random coords, if snake is on that generate new random
-        if(snake.checkCollision(apple)) {
-            apple = Apple.generateApple(snake)
-            snake.addSnakeBody(SnakeBody(-1, -1))
-        }
 
         // clear canvas
         graphicsContext.clearRect(0.0, 0.0, WIDTH.toDouble(), HEIGHT.toDouble())
@@ -199,6 +201,15 @@ class Game : Application() {
         //draw objects
         snake.draw(box, graphicsContext, Color.GREEN)
         apple.draw(box, graphicsContext, Color.RED)
+
+        if(snake.getSnakeVector().size == squareCount * squareCount) {
+            changeText("You won!\nPress R to restart!")
+
+            paused = true
+            if(bestScore < snake.score)
+                saveScore(snake.score)
+            saveMapAsText(snake, apple, squareCount)
+        }
 
         // display crude fps counter
         val elapsedMs = elapsedNanos / 1_000_000

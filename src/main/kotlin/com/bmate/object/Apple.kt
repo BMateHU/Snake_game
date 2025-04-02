@@ -3,6 +3,7 @@ package com.bmate.`object`
 import com.bmate.Game
 import com.bmate.utils.Vec2
 import com.bmate.utils.containsValue
+import kotlin.math.pow
 import kotlin.random.Random
 
 class Apple(vec: Vec2) : Object(vec) {
@@ -17,7 +18,8 @@ class Apple(vec: Vec2) : Object(vec) {
         fun generateApple(snake: Snake): Apple {
             var x = Random.nextInt(from = 0, until = Game.squareCount)
             var y = Random.nextInt(from = 0, until = Game.squareCount)
-            while(snake.getSnakeVector().containsValue(x = x, y = y)) {
+            while(snake.getSnakeVector().containsValue(x = x, y = y) && snake.getSnakeVector().size < Game.squareCount.toDouble()
+                    .pow(2)) {
                 x = Random.nextInt(from = 0, until = Game.squareCount)
                 y = Random.nextInt(from = 0, until = Game.squareCount)
             }
