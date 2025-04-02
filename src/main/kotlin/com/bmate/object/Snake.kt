@@ -12,7 +12,7 @@ class Snake(vec: Vec2) : Object(vec) {
     /**
      * Last position of the snake's part
      */
-    var last = Vec2(0, 0)
+    private var last = Vec2(0, 0)
 
     /**
      * Linked list -> head first, after that the body
@@ -63,7 +63,7 @@ class Snake(vec: Vec2) : Object(vec) {
      * @return true if collided
      */
     fun checkCollision(): Boolean {
-        var temp = getSnakeVector()
+        val temp = getSnakeVector()
         temp.remove(this.vec)
         temp.forEach {
             if(it.x == vec.x && it.y == vec.y)

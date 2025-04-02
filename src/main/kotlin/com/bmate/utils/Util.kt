@@ -2,10 +2,6 @@ package com.bmate.utils
 
 import java.io.File
 
-/*fun getResource(filename: String): String {
-    return Game::class.java.getResource(filename).toString()
-}*/
-
 fun loadScore(): Int {
     if(!File("bestScore.txt").exists()) {
         File("bestScore.txt").createNewFile()
