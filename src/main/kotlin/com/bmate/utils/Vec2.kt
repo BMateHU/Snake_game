@@ -1,4 +1,4 @@
-package com.bmate
+package com.bmate.utils
 
 class Vec2(var x: Int, var y: Int) {
     operator fun plus(other: Vec2): Vec2 {

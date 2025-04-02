@@ -1,4 +1,4 @@
-package com.bmate
+package com.bmate.utils
 
 import java.io.File
 

@@ -1,5 +1,6 @@
-package com.bmate
+package com.bmate.`object`
 
+import com.bmate.utils.Vec2
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.paint.Color
 

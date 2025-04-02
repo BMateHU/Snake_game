@@ -1,6 +1,8 @@
-package com.bmate
+package com.bmate.`object`
 
+import com.bmate.Game
 import com.bmate.Game.Direction
+import com.bmate.utils.Vec2
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.paint.Color
 
@@ -10,40 +12,31 @@ class Snake(vec: Vec2) : Object(vec) {
     /**
      * Last position of the snake's part
      */
-    private var last = Vec2(0, 0)
+    var last = Vec2(0, 0)
 
     /**
      * Linked list -> head first, after that the body
      */
-    private var before: Snake? = null
+    private var before: SnakeBody? = null
     var score: Int = 0
 
     /**
      * Draw the object
      * @param box a square, changes drawing's size and placement (grid-like)
+     * @param color the color of the snake's body
      */
     override fun draw(box: Double, graphicsContext: GraphicsContext, color: Color) {
-        super.draw(box, graphicsContext, color)
+        super.draw(box, graphicsContext, Color.LIMEGREEN)
         before?.draw(box, graphicsContext, color)
-    }
-
-    /**
-     * Updates position for not-head snakes
-     */
-    private fun updatePosition(snake: Snake) {
-        last.x = vec.x
-        last.y = vec.y
-        this.vec.x = snake.last.x
-        this.vec.y = snake.last.y
-        before?.updatePosition(this)
     }
 
     /**
      * @return all the snake pos vectors
      */
     fun getSnakeVector(): ArrayList<Vec2> {
-        var temp: Snake? = this
-        val snakes: ArrayList<Vec2> = arrayListOf(temp!!.vec)
+        var temp: SnakeBody? = before
+        val snakes: ArrayList<Vec2> = arrayListOf(this.vec)
+        temp?.vec?.let { snakes.add(it) }
         while(temp?.before != null) {
             temp = temp.before
             if(temp != null) {
@@ -82,11 +75,13 @@ class Snake(vec: Vec2) : Object(vec) {
     /**
      * Adds new snake to the end
      */
-    fun addSnake(snake: Snake) {
-        var temp: Snake? = this
+    fun addSnakeBody(snake: SnakeBody) {
+        var temp: SnakeBody? = before
         while(temp?.before != null) {
             temp = temp.before
         }
+        if(temp == null)
+            this.before = snake
         temp?.before = snake
     }
 
@@ -99,23 +94,25 @@ class Snake(vec: Vec2) : Object(vec) {
         if (direction == Direction.LEFT) {
             vec -= Vec2(1, 0)
             if(vec.x < 0)
-                vec.x = Game.squareCount-1
+                vec.x = Game.squareCount -1
         }
         if (direction == Direction.RIGHT) {
             vec += Vec2(1, 0)
-            if(vec.x > Game.squareCount-1)
+            if(vec.x > Game.squareCount -1)
                 vec.x = 0
         }
         if (direction == Direction.UP) {
             vec -= Vec2(0, 1)
             if(vec.y < 0)
-                vec.y = Game.squareCount-1
+                vec.y = Game.squareCount -1
         }
         if (direction == Direction.DOWN) {
             vec += Vec2(0, 1)
-            if(vec.y > Game.squareCount-1)
+            if(vec.y > Game.squareCount -1)
                 vec.y = 0
         }
-        before?.updatePosition(this)
+        val snakeBody = SnakeBody(vec)
+        snakeBody.last = last
+        before?.updatePosition(snakeBody)
     }
 }

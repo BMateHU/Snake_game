@@ -1,5 +1,10 @@
 package com.bmate
 
+import com.bmate.`object`.Apple
+import com.bmate.`object`.Snake
+import com.bmate.`object`.SnakeBody
+import com.bmate.utils.loadScore
+import com.bmate.utils.saveScore
 import javafx.animation.AnimationTimer
 import javafx.application.Application
 import javafx.event.EventHandler
@@ -7,12 +12,15 @@ import javafx.scene.Group
 import javafx.scene.Scene
 import javafx.scene.canvas.Canvas
 import javafx.scene.canvas.GraphicsContext
+import javafx.scene.control.TextInputDialog
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
 import javafx.scene.text.Text
 import javafx.stage.Stage
+import java.util.*
+import kotlin.properties.Delegates
 import kotlin.random.Random
 
 class Game : Application() {
@@ -20,7 +28,7 @@ class Game : Application() {
     companion object {
         const val WIDTH = 520
         const val HEIGHT = 520
-        var squareCount: Int = 10
+        var squareCount: Int = -1
     }
 
     private lateinit var mainScene: Scene
@@ -33,7 +41,7 @@ class Game : Application() {
     private lateinit var apple : Apple
 
     //map contains squareCount*squareCount squares
-    private var box = (HEIGHT / squareCount).toDouble()
+    private var box by Delegates.notNull<Double>()
 
     private var time: Long = 0
     private var paused: Boolean = false
@@ -51,7 +59,21 @@ class Game : Application() {
     private var currentlyActiveKeys : KeyCode? = null
 
     override fun start(mainStage: Stage) {
-        mainStage.title = "Event Handling"
+        mainStage.title = "Snake"
+
+        var mapSize: Optional<String>
+        while(squareCount < 0) {
+            val tid = TextInputDialog()
+            tid.title = "Choose map size!"
+            tid.contentText = "Choose map size"
+            tid.headerText = ""
+            tid.graphic = null
+            mapSize = tid.showAndWait()
+            if (mapSize.get().matches("[0-9]+".toRegex()))
+                squareCount = mapSize.get().toInt()
+        }
+
+        box = (HEIGHT / squareCount).toDouble()
 
         val root = Group()
         mainScene = Scene(root)
@@ -136,7 +158,7 @@ class Game : Application() {
         time += elapsedNanos
 
         //snake moves every 0.1 sec
-        if(time / 100_000_000 >= 1 && !paused) {
+        if(time / 200_000_000 >= 1 && !paused) {
             snake.updatePosition(currentDirection)
             //if moved, you can change direction
             moved = true
@@ -159,7 +181,7 @@ class Game : Application() {
         //Snake eats apple -> create new apple with random coords, if snake is on that generate new random
         if(snake.checkCollision(apple)) {
             apple = Apple.generateApple(snake)
-            snake.addSnake(Snake(-1, -1))
+            snake.addSnakeBody(SnakeBody(-1, -1))
         }
 
         // clear canvas

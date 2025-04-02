@@ -1,5 +1,8 @@
-package com.bmate
+package com.bmate.`object`
 
+import com.bmate.Game
+import com.bmate.utils.Vec2
+import com.bmate.utils.containsValue
 import kotlin.random.Random
 
 class Apple(vec: Vec2) : Object(vec) {
