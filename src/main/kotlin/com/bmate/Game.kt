@@ -63,7 +63,7 @@ class Game : Application() {
         mainStage.title = "Snake"
 
         var mapSize: Optional<String>
-        while(squareCount < 0) {
+        while(squareCount < 2) {
             val tid = TextInputDialog()
             tid.title = "Choose map size!"
             tid.contentText = "Choose map size"
