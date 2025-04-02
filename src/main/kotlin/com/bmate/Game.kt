@@ -166,11 +166,13 @@ class Game : Application() {
             moved = true
             //collision -> end of game
             if(snake.checkCollision()) {
+                if(bestScore < snake.score) {
+                    saveScore(snake.score)
+                    bestScore = snake.score
+                }
                 changeText("Press R to restart!")
 
                 paused = true
-                if(bestScore < snake.score)
-                    saveScore(snake.score)
                 saveMapAsText(snake, apple, squareCount)
             }
             time = 0
@@ -203,11 +205,13 @@ class Game : Application() {
         apple.draw(box, graphicsContext, Color.RED)
 
         if(snake.getSnakeVector().size == squareCount * squareCount) {
+            if(bestScore < snake.score) {
+                saveScore(snake.score)
+                bestScore = snake.score
+            }
             changeText("You won!\nPress R to restart!")
 
             paused = true
-            if(bestScore < snake.score)
-                saveScore(snake.score)
             saveMapAsText(snake, apple, squareCount)
         }
 
