@@ -17,7 +17,7 @@ class Snake(vec: Vec2) : Object(vec) {
     /**
      * Linked list -> head first, after that the body
      */
-    private var before: SnakeBody? = null
+    var before: SnakeBody? = null
     var score: Int = 0
 
     /**
@@ -91,25 +91,27 @@ class Snake(vec: Vec2) : Object(vec) {
     fun updatePosition(direction: Direction = Direction.DOWN) {
         last.x = vec.x
         last.y = vec.y
-        if (direction == Direction.LEFT) {
-            vec -= Vec2(1, 0)
-            if(vec.x < 0)
-                vec.x = Game.squareCount -1
-        }
-        if (direction == Direction.RIGHT) {
-            vec += Vec2(1, 0)
-            if(vec.x > Game.squareCount -1)
-                vec.x = 0
-        }
-        if (direction == Direction.UP) {
-            vec -= Vec2(0, 1)
-            if(vec.y < 0)
-                vec.y = Game.squareCount -1
-        }
-        if (direction == Direction.DOWN) {
-            vec += Vec2(0, 1)
-            if(vec.y > Game.squareCount -1)
-                vec.y = 0
+        when(direction) {
+            Direction.DOWN -> {
+                vec += Vec2(0, 1)
+                if(vec.y > Game.squareCount -1)
+                    vec.y = 0
+            }
+            Direction.UP -> {
+                vec -= Vec2(0, 1)
+                if(vec.y < 0)
+                    vec.y = Game.squareCount -1
+            }
+            Direction.LEFT -> {
+                vec -= Vec2(1, 0)
+                if(vec.x < 0)
+                    vec.x = Game.squareCount -1
+            }
+            Direction.RIGHT -> {
+                vec += Vec2(1, 0)
+                if(vec.x > Game.squareCount -1)
+                    vec.x = 0
+            }
         }
         val snakeBody = SnakeBody(vec)
         snakeBody.last = last

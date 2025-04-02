@@ -4,6 +4,7 @@ import com.bmate.`object`.Apple
 import com.bmate.`object`.Snake
 import com.bmate.`object`.SnakeBody
 import com.bmate.utils.loadScore
+import com.bmate.utils.saveMapAsText
 import com.bmate.utils.saveScore
 import javafx.animation.AnimationTimer
 import javafx.application.Application
@@ -26,8 +27,8 @@ import kotlin.random.Random
 class Game : Application() {
 
     companion object {
-        const val WIDTH = 520
-        const val HEIGHT = 520
+        const val WIDTH = 500
+        const val HEIGHT = 500
         var squareCount: Int = -1
     }
 
@@ -70,7 +71,8 @@ class Game : Application() {
             tid.graphic = null
             mapSize = tid.showAndWait()
             if (mapSize.get().matches("[0-9]+".toRegex()))
-                squareCount = mapSize.get().toInt()
+                if(mapSize.get().toInt() <= 20)
+                    squareCount = mapSize.get().toInt()
         }
 
         box = (HEIGHT / squareCount).toDouble()
@@ -169,6 +171,7 @@ class Game : Application() {
                 paused = true
                 if(bestScore < snake.score)
                     saveScore(snake.score)
+                saveMapAsText(snake, apple, squareCount)
             }
             time = 0
         }
@@ -213,6 +216,7 @@ class Game : Application() {
                 continueText.text = ""
                 bestScoreText.text = ""
                 bestScore = loadScore()
+                apple = Apple.generateApple(snake)
             }
         }
     }
