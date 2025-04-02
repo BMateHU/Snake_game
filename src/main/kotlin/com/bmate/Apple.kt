@@ -12,12 +12,12 @@ class Apple(vec: Vec2) : Object(vec) {
          * @return new apple object
          */
         fun generateApple(snake: Snake): Apple {
-            var x = Random.nextInt(from = 0, until = 20)
-            var y = Random.nextInt(from = 0, until = 20)
-            while(snake.getSnakeVector().containsValue(x = x))
-                x = Random.nextInt(from = 0, until = 20)
-            while(snake.getSnakeVector().containsValue(y = y))
-                y = Random.nextInt(from = 0, until = 20)
+            var x = Random.nextInt(from = 0, until = Game.squareCount)
+            var y = Random.nextInt(from = 0, until = Game.squareCount)
+            while(snake.getSnakeVector().containsValue(x = x, y = y)) {
+                x = Random.nextInt(from = 0, until = Game.squareCount)
+                y = Random.nextInt(from = 0, until = Game.squareCount)
+            }
             return Apple(x, y)
         }
     }

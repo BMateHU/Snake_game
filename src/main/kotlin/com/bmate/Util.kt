@@ -22,7 +22,7 @@ fun saveScore(score: Int) {
 
 fun ArrayList<Vec2>.containsValue(x: Int = -1, y: Int = -1) : Boolean {
     this.forEach {
-        if(it.x == x || it.y == y) {
+        if(it.x == x && it.y == y) {
             return true
         }
     }

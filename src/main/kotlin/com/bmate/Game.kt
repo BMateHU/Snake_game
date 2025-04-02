@@ -18,8 +18,9 @@ import kotlin.random.Random
 class Game : Application() {
 
     companion object {
-        private const val WIDTH = 520
-        private const val HEIGHT = 520
+        const val WIDTH = 520
+        const val HEIGHT = 520
+        var squareCount: Int = 10
     }
 
     private lateinit var mainScene: Scene
@@ -31,8 +32,8 @@ class Game : Application() {
     private lateinit var snake: Snake
     private lateinit var apple : Apple
 
-    //map contains 20x20 squares
-    private var box = (HEIGHT / 20).toDouble()
+    //map contains squareCount*squareCount squares
+    private var box = (HEIGHT / squareCount).toDouble()
 
     private var time: Long = 0
     private var paused: Boolean = false
@@ -78,7 +79,7 @@ class Game : Application() {
         graphicsContext = canvas.graphicsContext2D
 
         snake = Snake()
-        apple = Apple(Random.nextInt(from = 0, until = 20), Random.nextInt(from = 0, until = 20))
+        apple = Apple(Random.nextInt(from = 0, until = squareCount), Random.nextInt(from = 0, until = squareCount))
 
         // Main loop
         object : AnimationTimer() {
